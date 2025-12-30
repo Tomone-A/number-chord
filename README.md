@@ -1,7 +1,5 @@
 # number-chord
-身近な数字をコード進行に変換するアプリ
-
-デモサイトはこちら：akanejpeg.pythonanywhere.com
+身近な数字をコード進行に変換するアプリです。デモサイトはこちら：https://akanejpeg.pythonanywhere.com
 
 ## 概要
 誕生日、学籍番号、車のナンバー...あなたの身の回りの数字が、実は素敵な響きをもっているかもしれません。<br>
