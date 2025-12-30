@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Chord</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            line-height: 1.6;
+            color: #152450;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 50px;
+            background-color: #f1f3f7;
+        }
+        h1 {
+            color: #2a58a6;
+        }
+        input[type="text"] {
+            padding: 10px;
+            font-size: 16px;
+            width: 200px;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #5487ce;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        input[type="submit"]:hover {
+            background-color: #2a58a6;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f1f3f7;
+        }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        .play-btn { background-color: #5487ce; color: white; border: none; border-radius: 5px; }
+        .play-btn:hover { background-color: #2a58a6; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+</head>
+<body>
+    <h1>Number × Chord</h1>
+    <p>誕生日、学籍番号、車のナンバー...あなたの身の回りの数字が、実は素敵な響きをもっているかもしれません。作曲のアイデア出しなどに。</p>
+    <form action='/' method="POST">
+        <label for="number_input">数字を入力してください（例: 6451）</label><br>
+        <input type="text" id="input_number" name="input_number" required>
+        <input type="submit" value="変換">
+    </form>
+
+    {% if chords %}
+    <h3>生成されたコード進行:</h3>
+    <div class="chord-display">
+        {% for chord in chords %}
+            <span>{{ chord }}</span> | 
+        {% endfor %}
+    </div>
+    <button id="play-btn" class="play-btn">再生する</button>
+    <p>※音が流れます。</p>
+    
+    <div style="margin-top: 15px;">
+    <button id="copy-btn" style="background-color: #607D8B; color: white; border: none; border-radius: 5px;">
+        📄 結果をコピー
+    </button>
+    <button id="tweet-btn" style="background-color: #000000; color: white; border: none; border-radius: 5px;">
+        🚀 Xでポスト
+    </button>
+
+    <script>
+        const progression = {{ chords | tojson }};
+        const chordNotes = {
+            'C': ['C3', 'C4', 'E4', 'G4'],
+            'Dm': ['D3', 'D4', 'F4', 'A4'],
+            'Em': ['E3', 'E4', 'G4', 'B4'],
+            'F': ['F3', 'F4', 'A4', 'C5'],
+            'G': ['G3', 'G4', 'B4', 'D5'],
+            'Am': ['A3', 'A4', 'C5', 'E5'],
+            'Bm(b5)': ['B3', 'B4', 'D5', 'F5'],
+            'C (High)': ['C4', 'C5', 'E5', 'G5'],
+            'Cadd9': ['C3', 'E4', 'G4', 'D5'],
+            'N.C.': []        
+        };
+        
+        document.getElementById('play-btn').addEventListener('click', async () => {
+            await Tone.start();
+            const synth = new Tone.PolySynth(Tone.Synth).toDestination();
+            let now = Tone.now();
+            progression.forEach(chord => {
+                const notes = chordNotes[chord];
+                if (notes && notes.length > 0) {
+                    synth.triggerAttackRelease(notes, '0.8n', now);
+                }
+                now += 1; // 1秒ごとに次のコードを再生
+            });
+        });
+    
+        function makeShareText() {
+            const chordsText = progression.join(' | '); 
+            
+            // 投稿する文章
+            return `あなたの数字は、こんなに素敵な響きを持っていました...\nコード進行: ${chordsText}\n#NumberChord`;
+        }
+
+        document.getElementById('copy-btn').addEventListener('click', () => {
+            const text = makeShareText();
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert("コピーしました！\nSNSなどに貼り付けてください。");
+            }).catch(err => {
+                console.error('コピー失敗:', err);
+            });
+        });
+
+        // Xに直接飛ぶ場合
+        document.getElementById('tweet-btn').addEventListener('click', () => {
+            const text = makeShareText();
+            // 投稿用URLを作成
+            const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+            
+            // 新しいタブで開く
+            window.open(tweetUrl, '_blank');
+        });    
+        
+    </script>
+    {% endif %}
+
+</div>
+</body>
+
+</html>
